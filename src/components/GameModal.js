@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createGame } from "../api/game.js";
-import InviteLink from "./InviteLink.js";
+// import InviteLink from "./InviteLink.js";
 import { useNavigate } from "react-router-dom";
 import "../styles/GameModal.css"; // Import CSS file
 
@@ -8,7 +8,7 @@ const GameModal = ({ onClose }) => {
   const [roomName, setRoomName] = useState("");
   const [mode, setMode] = useState("single");
   const [numQuestions, setNumQuestions] = useState(5);
-  const [inviteLink, setInviteLink] = useState("");
+  // const [inviteLinkProp, setInviteLink] = useState("");
   const navigate = useNavigate();
 
   const handleCreateGame = async () => {
@@ -17,7 +17,7 @@ const GameModal = ({ onClose }) => {
 
     if (response && response.game && response.game.game_id) {
       if (response.game.mode === "multiplayer") {
-        setInviteLink(`${window.location.origin}/game/${response.game.game_id}`);
+        // setInviteLink(`${window.location.origin}/game/${response.game.game_id}`);
       }
       navigate(`/game/${response.game.game_id}`);
     }
@@ -57,12 +57,12 @@ const GameModal = ({ onClose }) => {
 
         <button onClick={handleCreateGame} className="modal-button primary">Create Game</button>
 
-        {inviteLink && (
+        {/* {inviteLinkProp && (
           <div className="invite-container">
             <p>Invite Link:</p>
-            <InviteLink link={inviteLink} />
+            <InviteLink link={inviteLinkProp} />
           </div>
-        )}
+        )} */}
 
         <button onClick={onClose} className="modal-button secondary">Close</button>
       </div>

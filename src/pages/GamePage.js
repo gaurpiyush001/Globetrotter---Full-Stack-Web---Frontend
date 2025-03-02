@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import GameStats from "./GameStats.js";
 import GameOverModal from "./GameOverModal.js";
@@ -6,8 +6,9 @@ import GameOverModal from "./GameOverModal.js";
 const API_URL = "http://localhost:3000/api/v1";
 
 const GamePage = () => {
-  const { gameId } = useParams(); 
+  const { gameId } = useParams();
   const sessionId = localStorage.getItem("session_id");
+  
   const [questionData, setQuestionData] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [feedback, setFeedback] = useState(null);
@@ -16,27 +17,21 @@ const GamePage = () => {
   const [totalScore, setTotalScore] = useState(null);
   const apiCalled = useRef(false); // Prevent double API calls
 
-  useEffect(() => {
-    if (!apiCalled.current) {
-      apiCalled.current = true;
-      fetchNextQuestion();
-    }
-  }, []);
-
-  const fetchNextQuestion = async () => {
+  // ✅ Wrapping fetchNextQuestion in useCallback to avoid stale dependencies
+  const fetchNextQuestion = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/game/${gameId}/next-question`, {
         headers: { "x-session-id": sessionId },
       });
       const data = await response.json();
-      console.log("dataa====== ques", data);
+
+      console.log("Fetched Question Data:", data);
 
       if (!data || !data?.question || !data.question?.question) {
-        console.log("game over===============", data);
-        setTotalScore(data.question.total_score);
+        console.log("Game Over Triggered:", data);
+        setTotalScore(data?.question?.total_score || 0);
         setGameOver(true);
       } else {
-        console.log("not game over.>>>>>>>>>>>>");
         setQuestionData(data.question);
         setFeedback(null);
         setSelectedOption(null);
@@ -44,7 +39,15 @@ const GamePage = () => {
     } catch (error) {
       console.error("Error fetching next question:", error);
     }
-  };
+  }, [gameId, sessionId]); // ✅ Dependencies added to prevent stale closures
+
+  // ✅ Properly handling useEffect with dependencies
+  useEffect(() => {
+    if (!apiCalled.current) {
+      apiCalled.current = true;
+      fetchNextQuestion();
+    }
+  }, [fetchNextQuestion]); // ✅ Added fetchNextQuestion as dependency
 
   const handleAnswerSubmit = async (option) => {
     if (selectedOption) return; // Prevent multiple clicks
@@ -66,10 +69,10 @@ const GamePage = () => {
       });
 
       const data = await response.json();
-      console.log("response data", data);
+      console.log("Response Data:", data);
 
       setFeedback(data);
-      setPlayerStats(data.player_stats); // Update player stats
+      setPlayerStats(data.player_stats);
     } catch (error) {
       console.error("Error submitting answer:", error);
     }
