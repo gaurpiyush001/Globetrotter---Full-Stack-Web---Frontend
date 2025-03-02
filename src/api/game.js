@@ -1,6 +1,6 @@
 // src/api/game.js
 import axios from "axios";
-const API_URL = "http://localhost:3000/api/v1";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000/api/v1";
 
 export const createGame = async (gameData) => {
   const sessionId = localStorage.getItem("session_id");
